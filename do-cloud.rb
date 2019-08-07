@@ -82,7 +82,7 @@ config.each do |role, settings|
 
 	if role == 'active_lb'
 		floating_ip = list_floating_ips(cloud).last
-		sleep 15
+		sleep 20
 		cloud.floating_ip_actions.assign(ip: floating_ip, droplet_id: created.id)
 		puts "Floating IP #{floating_ip} assigned to #{hostname}"
 	end
@@ -142,4 +142,4 @@ vms.each do |hostname, public_addr|
 
 end
 
-puts "All services started. Application available at #{floating_ip}"
+puts "All services started. Application available at #{list_floating_ips(cloud).last}"
