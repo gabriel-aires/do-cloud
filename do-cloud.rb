@@ -99,7 +99,8 @@ vms.each do |hostname, public_addr|
 			ssh.exec! "echo #{ip} #{name} >> /etc/hosts" if name != hostname
 		end
 
-		puts ssh.exec! "apt install ruby -y"
+    ssh.exec! "apt update"
+		ssh.exec! "apt install ruby -y"
 		puts ssh.exec! "gem install itamae -q"
 	end
 
