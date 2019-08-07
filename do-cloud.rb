@@ -122,7 +122,7 @@ vms.each do |hostname, public_addr|
 
     ssh.exec! "apt update"
 		ssh.exec! "apt install ruby -y"
-		ssh.exec! "gem install itamae -q"
+		ssh.exec! "gem install itamae -v 1.9.11 -q"
 	end
 
   puts "Applying cookbooks..."
