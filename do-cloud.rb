@@ -104,6 +104,7 @@ end
 #Wait for cloud setup
 sleep 60
 
+#Configure Infrastructure
 vms.each do |hostname, public_addr|
 
 	puts "Testing ssh connection for host #{hostname} (#{public_addr})..."
@@ -112,7 +113,7 @@ vms.each do |hostname, public_addr|
 		file.puts host_key
 	end
 
-	puts "updating hosts file, installing dependencies"
+	puts "Updating hosts file, installing dependencies"
 	Net::SSH.start(public_addr, 'root', keys: [sshkey_file]) do |ssh|
 
 		hosts.each do |name, ip|
@@ -124,4 +125,15 @@ vms.each do |hostname, public_addr|
 		puts ssh.exec! "gem install itamae -q"
 	end
 
+  puts "Applying cookbooks..."
+	case hostname
+	when /^neo-lb/
+    cmd = "itamae ssh -h #{public_addr} -u root -i #{sshkey_file} roles/load_balancer.rb"
+		puts "Running: #{cmd}"
+  	system cmd
+	else
+		puts "no recipe found for #{hostname}"
+  end
+
 end
+
