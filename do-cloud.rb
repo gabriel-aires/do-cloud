@@ -142,3 +142,4 @@ vms.each do |hostname, public_addr|
 
 end
 
+puts "All services started. Application available at #{floating_ip}"
