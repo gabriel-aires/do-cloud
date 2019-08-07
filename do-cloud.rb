@@ -3,13 +3,15 @@ require 'droplet_kit'
 require 'net/ssh'
 
 #VM Configuration
+vms = {}
+hosts = {}
 config = {}
 vm_image = 'ubuntu-18-04-x64'
 vm_size = 's-1vcpu-1gb'
 config['active_lb']		= { name: 'neo-lb1', region: 'nyc1', image: vm_image, size: vm_size}
-config['standby_lb']	= { name: 'neo-lb2', region: 'nyc3', image: vm_image, size: vm_size}
+config['standby_lb']	= { name: 'neo-lb2', region: 'nyc1', image: vm_image, size: vm_size}
 config['app_server1'] = { name: 'neo-app1', region: 'nyc1', image: vm_image, size: vm_size}
-config['app_server2'] = { name: 'neo-app2', region: 'nyc3', image: vm_image, size: vm_size}
+config['app_server2'] = { name: 'neo-app2', region: 'nyc1', image: vm_image, size: vm_size}
 
 #initialize Digital Ocean client
 token_file = ARGV.size == 1 ? ARGV.first : "STDIN"
@@ -47,38 +49,58 @@ end
 neo_keys = cloud.ssh_keys.all.select { |key| key.name == "neokey" }.map { |key| key.fingerprint}
 
 #Provision Infrastructure
-config.each do |vm, settings|
-	puts "Creating machine #{vm}..."
+config.each do |role, settings|
+  hostname = settings[:name]
+	puts "Creating machine #{hostname} (#{role})..."
 
 	host_config = DropletKit::Droplet.new(
-		name: settings[:name],
+		name: hostname,
 		region: settings[:region],
 		image: settings[:image],
 		size: settings[:size],
 		ssh_keys: neo_keys,
 		private_networking: true,
+		monitoring: true,
 	)
 
 	created = cloud.droplets.create host_config
-	sleep 60
+  puts "ID: #{created.id}"
+	sleep 5
 
 	host = cloud.droplets.find(id: created.id)
 	host.networks.v4.each do |network|
-		puts "#{network.type} ipv4:\t#{network.ip_address}"
+
+  	puts "#{network.type} ipv4:\t#{network.ip_address}"
+    if network.type == 'public'
+      vms[hostname] = network.ip_address
+    else
+      hosts[hostname] = network.ip_address
+    end
+
 	end
-  puts "ID: #{created.id}"
 
-	puts "Testing ssh connection..."
-	ip_addr = host.networks.v4.first.ip_address
-  host_key = `ssh-keyscan -H "#{ip_addr}"`
+end
 
+#Wait for cloud setup
+sleep 60
+
+vms.each do |hostname, public_addr|
+
+	puts "Testing ssh connection for host #{hostname} (#{public_addr})..."
+  host_key = `ssh-keyscan -H "#{public_addr}"`
 	File.open "#{Dir.home}/.ssh/known_hosts", 'a' do |file|
 		file.puts host_key
 	end
 
-	Net::SSH.start(ip_addr, 'root', keys: [sshkey_file]) do |ssh|
-		puts ssh.exec!("hostname")
-		puts ssh.exec!("ifconfig")
+	puts "updating hosts file, installing dependencies"
+	Net::SSH.start(public_addr, 'root', keys: [sshkey_file]) do |ssh|
+
+		hosts.each do |name, ip|
+			ssh.exec! "echo #{ip} #{name} >> /etc/hosts" if name != hostname
+		end
+
+		puts ssh.exec! "apt install ruby -y"
+		puts ssh.exec! "gem install itamae -q"
 	end
 
 end
