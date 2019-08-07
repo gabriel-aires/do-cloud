@@ -8,10 +8,11 @@ hosts = {}
 config = {}
 vm_image = 'ubuntu-18-04-x64'
 vm_size = 's-1vcpu-1gb'
-config['active_lb']		= { name: 'neo-lb1', region: 'nyc1', image: vm_image, size: vm_size}
-config['standby_lb']	= { name: 'neo-lb2', region: 'nyc1', image: vm_image, size: vm_size}
-config['app_server1'] = { name: 'neo-app1', region: 'nyc1', image: vm_image, size: vm_size}
-config['app_server2'] = { name: 'neo-app2', region: 'nyc1', image: vm_image, size: vm_size}
+vm_region = 'nyc1'
+config['active_lb']		= { name: 'neo-lb1', region: vm_region, image: vm_image, size: vm_size}
+config['standby_lb']	= { name: 'neo-lb2', region: vm_region, image: vm_image, size: vm_size}
+config['app_server1'] = { name: 'neo-app1', region: vm_region, image: vm_image, size: vm_size}
+config['app_server2'] = { name: 'neo-app2', region: vm_region, image: vm_image, size: vm_size}
 
 #initialize Digital Ocean client
 token_file = ARGV.size == 1 ? ARGV.first : "STDIN"
@@ -48,6 +49,18 @@ end
 
 neo_keys = cloud.ssh_keys.all.select { |key| key.name == "neokey" }.map { |key| key.fingerprint}
 
+#Enable Floating Ip (to be used with active_lb)
+def list_floating_ips(client)
+	client.floating_ips.all.map { |floating_ip| floating_ip.ip }
+end
+
+if list_floating_ips(cloud).size == 0
+	cloud.floating_ips.create(DropletKit::FloatingIp.new region: vm_region)
+	puts "Floating IP created"
+else
+	puts "Using existing floating IP"
+end
+
 #Provision Infrastructure
 config.each do |role, settings|
   hostname = settings[:name]
@@ -66,6 +79,13 @@ config.each do |role, settings|
 	created = cloud.droplets.create host_config
   puts "ID: #{created.id}"
 	sleep 5
+
+	if role == 'active_lb'
+		floating_ip = list_floating_ips(cloud).last
+		sleep 10
+		cloud.floating_ip_actions.assign(ip: floating_ip, droplet_id: created.id)
+		puts "Floating IP #{floating_ip} assigned to #{hostname}"
+	end
 
 	host = cloud.droplets.find(id: created.id)
 	host.networks.v4.each do |network|
