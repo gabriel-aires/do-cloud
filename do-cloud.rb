@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'droplet_kit'
+require 'net/ssh'
 
 #VM Configuration
 config = {}
@@ -59,12 +60,25 @@ config.each do |vm, settings|
 	)
 
 	created = cloud.droplets.create host_config
-	sleep 5
+	sleep 60
 
 	host = cloud.droplets.find(id: created.id)
 	host.networks.v4.each do |network|
 		puts "#{network.type} ipv4:\t#{network.ip_address}"
 	end
   puts "ID: #{created.id}"
+
+	puts "Testing ssh connection..."
+	ip_addr = host.networks.v4.first.ip_address
+  host_key = `ssh-keyscan -H "#{ip_addr}"`
+
+	File.open "#{Dir.home}/.ssh/known_hosts", 'a' do |file|
+		file.puts host_key
+	end
+
+	Net::SSH.start(ip_addr, 'root', keys: [sshkey_file]) do |ssh|
+		puts ssh.exec!("hostname")
+		puts ssh.exec!("ifconfig")
+	end
 
 end
