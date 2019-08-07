@@ -82,7 +82,7 @@ config.each do |role, settings|
 
 	if role == 'active_lb'
 		floating_ip = list_floating_ips(cloud).last
-		sleep 10
+		sleep 15
 		cloud.floating_ip_actions.assign(ip: floating_ip, droplet_id: created.id)
 		puts "Floating IP #{floating_ip} assigned to #{hostname}"
 	end
@@ -122,17 +122,22 @@ vms.each do |hostname, public_addr|
 
     ssh.exec! "apt update"
 		ssh.exec! "apt install ruby -y"
-		puts ssh.exec! "gem install itamae -q"
+		ssh.exec! "gem install itamae -q"
 	end
 
   puts "Applying cookbooks..."
+  cmd = "itamae ssh -h #{public_addr} -u root -i #{sshkey_file}"
 	case hostname
 	when /^neo-lb/
-    cmd = "itamae ssh -h #{public_addr} -u root -i #{sshkey_file} roles/load_balancer.rb"
+    cmd += " roles/load_balancer.rb"
+		puts "Running: #{cmd}"
+  	system cmd
+	when /^neo-app/
+    cmd += " roles/docker_app.rb"
 		puts "Running: #{cmd}"
   	system cmd
 	else
-		puts "no recipe found for #{hostname}"
+		puts "No recipe found for #{hostname}"
   end
 
 end
