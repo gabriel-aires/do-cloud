@@ -25,6 +25,11 @@ bundle
 ./do-schedule.rb
 ```
 
+## Preparation
+Actual usage of the scripts require an active Digital Ocean account and a personal access token, according to the available [instructions](https://www.digitalocean.com/docs/api/create-personal-access-token/)
+
+The key should be stored in the file **/opt/do-cloud/.do-token.txt**
+
 ## Results
 The cloud shoud be provisioned every weekday at 07:00 and destroyed at 19:00. The infrastructure consists of the following virtual machines:
 
