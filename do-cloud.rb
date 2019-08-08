@@ -121,7 +121,7 @@ vms.each do |hostname, public_addr|
 		end
 
     ssh.exec! "apt update"
-		ssh.exec! "apt install ruby -y"
+		ssh.exec! "apt install ruby fail2ban -y"
 		ssh.exec! "gem install itamae -v 1.9.11 -q"
 	end
 
