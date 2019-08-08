@@ -33,10 +33,10 @@ The key should be stored in the file **/opt/do-cloud/.do-token.txt**
 ## Results
 The cloud shoud be provisioned every weekday at 07:00 and destroyed at 19:00. The infrastructure consists of the following virtual machines:
 
-* neo-lb1 (active load balancer, static IP enabled)
-* neo-lb2 (standby load balancer for easy failover)
-* neo-app1 (docker application server 1)
-* neo-app2 (docker application server 2)
+* neo-lb-01 (active load balancer, static IP enabled)
+* neo-lb-02 (standby load balancer for easy failover)
+* neo-app-01 (docker application server 1)
+* neo-app-02 (docker application server 2)
 
 ![Cloud Overview](https://raw.githubusercontent.com/gabriel-aires/do-cloud/master/docs/cloud-overview.png)
 

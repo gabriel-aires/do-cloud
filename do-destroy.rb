@@ -2,7 +2,7 @@
 require 'droplet_kit'
 
 #list of hosts to be destroyed
-hosts = ['neo-lb1', 'neo-lb2', 'neo-app1', 'neo-app2']
+hosts = ['neo-lb-01', 'neo-lb-02', 'neo-app-01', 'neo-app-02']
 
 #initialize Digital Ocean client
 token_file = ARGV.size == 1 ? ARGV.first : "STDIN"

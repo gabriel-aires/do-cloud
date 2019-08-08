@@ -9,10 +9,10 @@ config = {}
 vm_image = 'ubuntu-18-04-x64'
 vm_size = 's-1vcpu-1gb'
 vm_region = 'nyc1'
-config['active_lb']		= { name: 'neo-lb1', region: vm_region, image: vm_image, size: vm_size}
-config['standby_lb']	= { name: 'neo-lb2', region: vm_region, image: vm_image, size: vm_size}
-config['app_server1'] = { name: 'neo-app1', region: vm_region, image: vm_image, size: vm_size}
-config['app_server2'] = { name: 'neo-app2', region: vm_region, image: vm_image, size: vm_size}
+config['active_lb']		= { name: 'neo-lb-01', region: vm_region, image: vm_image, size: vm_size}
+config['standby_lb']	= { name: 'neo-lb-02', region: vm_region, image: vm_image, size: vm_size}
+config['app_server1'] = { name: 'neo-app-01', region: vm_region, image: vm_image, size: vm_size}
+config['app_server2'] = { name: 'neo-app-02', region: vm_region, image: vm_image, size: vm_size}
 
 #initialize Digital Ocean client
 token_file = ARGV.size == 1 ? ARGV.first : "STDIN"
