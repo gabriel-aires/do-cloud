@@ -39,3 +39,9 @@ The cloud shoud be provisioned every weekday at 07:00 and destroyed at 19:00. Th
 * neo-app2 (docker application server 2)
 
 ![Cloud Overview](https://raw.githubusercontent.com/gabriel-aires/do-cloud/master/docs/cloud-overview.png)
+
+## Monitoring
+
+Monitoring is immediately available through the Digital Ocean Dashboard:
+
+![Host Monitoring](https://raw.githubusercontent.com/gabriel-aires/do-cloud/master/docs/host-monitoring.png)
